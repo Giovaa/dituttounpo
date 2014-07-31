@@ -1,0 +1,258 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package griglia;
+
+import java.util.ArrayList;
+import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.TilePane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+
+/**
+ *
+ * @author Giova
+ */
+public class Griglia extends Application {
+    
+    @Override
+    public void start(Stage primaryStage) {
+        ArrayList<ArrayList<Circle>> list = new ArrayList<ArrayList<Circle>>(10);
+        
+        //GRIGLIA---------------------------------------------
+        //SETTO LA GRIGLIA METTENDO ALL'INTERNO
+        //I CERCHI INSERITI IN UN ARRAYLIST
+        GridPane griglia=new GridPane();
+        griglia.setGridLinesVisible(true);
+        griglia.setAlignment(Pos.CENTER);
+        for(int i=1;i<=10;i++){
+            ArrayList<Circle> row= new ArrayList<Circle>(10);
+            list.add(row);
+            for(int j=1;j<=10;j++){
+                Circle cerchio= new Circle(0,0,30);
+                cerchio.setFill(Color.PURPLE);
+                cerchio.setOpacity(0.01);
+                cerchio.addEventHandler(Event.ANY, new EventHandler(){
+
+                    @Override
+                    public void handle(Event t) {
+                        if(t.getEventType().getName().equals("MOUSE_CLICKED")){
+                            Circle c= (Circle) t.getTarget();
+                            int row=GridPane.getRowIndex(c)-1;
+                            int col=GridPane.getColumnIndex(c)-1;
+                            
+                            Double n= c.getOpacity();
+
+                            if(n==0.01){
+                                c.setOpacity(1);
+                            }else{
+                                c.setOpacity(0.01);                            
+                            }
+                        }
+                    }
+                    
+                
+                });
+                list.get(i-1).add(cerchio);
+                griglia.add(list.get(i-1).get(j-1),j,i);
+            }
+        
+        }
+        //---------------------------------------------------
+        
+        //BOTTONi--------------------------------------------
+      
+        
+        ToggleButton Alg1=new ToggleButton("Alg1");
+        Alg1.setUserData("Alg1");
+        ToggleButton Alg2=new ToggleButton("Alg2");
+        Alg2.setUserData("Alg2");
+        ToggleButton Alg3=new ToggleButton("Alg3");
+        Alg3.setUserData("Alg3");
+        final ToggleGroup group = new ToggleGroup();
+        Alg1.setToggleGroup(group);
+        Alg1.setSelected(true);
+        Alg2.setToggleGroup(group);
+        Alg3.setToggleGroup(group);
+        final Text movimento = new Text("Alg1");
+        //FUNZIONE PER CATTURARE IL CAMBIAMENTO
+        //DI BOTTONE
+        group.selectedToggleProperty().addListener(new ChangeListener<Toggle>(){
+            @Override
+            public void changed(ObservableValue<? extends Toggle> ov, Toggle t, Toggle t1) {
+                if(t1==null){
+                   movimento.setText("");
+                }else{
+                    movimento.setText((String)group.getSelectedToggle().getUserData());
+                    
+                }
+            }
+        });
+       //----------------------------------------------------
+        Button Print= new Button("PRINT");
+        Button Clear= new Button("CLEAR");
+        Button Step = new Button("STEP"); 
+        
+        //STAMPA UNA MATRICE DI TRUE FALSE IN BASE
+        //SE NELLA GRIGLIA IL CERCHIO 
+        //E' VISIBILE O INVISIBILE
+        Print.addEventHandler(ActionEvent.ACTION, new EventHandler(){
+            @Override
+            public void handle(Event t) {
+                Label tx= new Label();
+                String s1= new String();
+                for(int i=1;i<=10;i++){
+                    for(int j=1;j<=10;j++){
+                        if(list.get(i-1).get(j-1).getOpacity()==1){
+                            s1= s1+" "+ "True";
+                        }else{
+                            s1=s1+" "+"False";
+                        }
+                    }
+                    s1=s1+"\n";
+                }
+                tx.setText(s1);
+                HBox l=new HBox();
+                l.getChildren().add(tx);
+                Scene scena= new Scene(l,300,250);
+                Stage secondarystage=new Stage();
+                secondarystage.setScene(scena);
+                secondarystage.show();
+            }
+        });
+        
+        //PULIRE TUTTO LA GRIGLIA
+        Clear.addEventHandler(ActionEvent.ACTION, new  EventHandler(){
+
+            @Override
+            public void handle(Event t) {
+                for(int i=1;i<=10;i++){
+                    for(int j=1;j<=10;j++){
+                        list.get(i-1).get(j-1).setOpacity(0.01);
+                    }
+                }
+            }
+        
+        
+        });
+        //BOTTONE PER UTILIZZARE L'ALGORITMO
+        Step.addEventHandler(ActionEvent.ACTION, new EventHandler(){
+
+            @Override
+            public void handle(Event t) {
+              String s=new String(movimento.toString());
+
+              if(s.contains("Alg1")){
+                  movealg1();
+              }else if(s.contains("Alg2")){
+                  movealg2();
+              }else if(s.contains("Alg3")){
+                  movealg3();
+              }
+            }
+            //ALGORITMO DI MOVIMENTO DIAGONALE IN SU
+            private void movealg1() {
+                for(int i=0;i<10;i++){
+                    for(int j=0;j<10;j++){
+                       if(i!=0&&j!=9){
+                            if(list.get(i).get(j).getOpacity()==1){
+                               list.get(i).get(j).setOpacity(0.01);
+                               list.get(i-1).get(j+1).setOpacity(1);
+
+                           }
+                       }
+                    }
+                }
+            }
+            //ALGORITMO DI MOVIMENTO SINISTRA
+            private void movealg2() {
+                for(int i=0;i<10;i++){
+                    for(int j=0;j<10;j++){
+                       if(j!=0){
+                            if(list.get(i).get(j).getOpacity()==1){
+                               list.get(i).get(j).setOpacity(0.01);
+                               list.get(i).get(j-1).setOpacity(1);
+
+                           }
+                       }
+                    }
+                }
+            }
+            //ALGORITMO DI MOVIMENTO IN BASSO
+            //PROBLEMA NON MI SI SPOSTA SOLO DI UNO
+            //PERCHE' INCREMENTANDO LA I SI SPOSTA IN BASSO MA 
+            // ALL CICLO DI I SUCCESSIOVO LO SPOSTA DI NUOVO
+            private void movealg3() {
+                for(int i=0;i<10;i++){
+                    for(int j=0;j<10;j++){
+                           if(i!=9){
+                            if(list.get(i).get(j).getOpacity()==1){
+                               list.get(i).get(j).setOpacity(0.01);
+                               list.get(i+1).get(j).setOpacity(1);                             
+                          }     
+                       }
+                    }
+                }
+            }
+        
+        });
+        //LAYOUT
+        //DICHIARAZIONE
+        TilePane bottom= new TilePane();
+        TilePane top= new TilePane();
+        //PER TOP
+        top.setHgap(20);
+        top.setAlignment(Pos.CENTER);
+        top.getChildren().addAll(Alg1,Alg2,Alg3);
+        
+        //PER BOTTOM
+        bottom.setHgap(20);
+        bottom.setAlignment(Pos.CENTER);
+        bottom.getChildren().addAll(Print,Clear,Step);
+        //BORDER PANE
+        BorderPane root = new BorderPane();
+        root.setCenter(griglia);
+        root.setBottom(bottom);
+        root.setTop(top);
+        //SCENA
+        Scene scene = new Scene(root, 800, 750);
+        
+        primaryStage.setTitle("Hello World!");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    /**
+     * The main() method is ignored in correctly deployed JavaFX application.
+     * main() serves only as fallback in case the application can not be
+     * launched through deployment artifacts, e.g., in IDEs with limited FX
+     * support. NetBeans ignores main().
+     *
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        launch(args);
+    }
+    
+}
